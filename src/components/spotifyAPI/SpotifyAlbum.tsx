@@ -1,12 +1,12 @@
 import { Image } from "primereact/image";
-import { SpotifyAlbum } from "../spotifyTypes";
+import { SpotifyAlbumType } from "../../types/spotifyTypes";
 
-interface AlbumPropType {
-  propsAlbum: SpotifyAlbum;
+interface SpotifyAlbumPropType {
+  propsAlbum: SpotifyAlbumType;
 }
 
-function Album({ propsAlbum }: AlbumPropType) {
-  const getImage = (album: SpotifyAlbum) => {
+function SpotifyAlbum({ propsAlbum }: SpotifyAlbumPropType) {
+  const getImage = (album: SpotifyAlbumType) => {
     const image = album.images.find((img) => img.height === 64);
     return image ? image.url : "";
   };
@@ -51,7 +51,7 @@ function Album({ propsAlbum }: AlbumPropType) {
       <p style={textStyle}>
         Artists: {propsAlbum.artists.map((artist) => artist.name).join(", ")}
       </p>
-      <p style={textStyle}>Total Stacks : {propsAlbum.total_tracks}</p>
+      <p style={textStyle}>Total Tracks : {propsAlbum.total_tracks}</p>
       <a
         href={propsAlbum.external_urls.spotify}
         target="_blank"
@@ -66,4 +66,4 @@ function Album({ propsAlbum }: AlbumPropType) {
   );
 }
 
-export default Album;
+export default SpotifyAlbum;

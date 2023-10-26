@@ -54,6 +54,8 @@ export const SpotifyResponseSchema = z.object({
   albums: SpotifyAlbumsResponseSchema,
 });
 
-export type SpotifyAlbum = z.infer<typeof SpotifyAlbumSchema>;
-export type SpotifyAlbumsResponse = z.infer<typeof SpotifyAlbumsResponseSchema>;
-export type SpotifyResponse = z.infer<typeof SpotifyResponseSchema>;
+export type SpotifyAlbumType = z.infer<typeof SpotifyAlbumSchema>;
+export type SpotifyAlbumsResponseType = z.infer<
+  typeof SpotifyAlbumsResponseSchema
+>;
+export type SpotifyResponseType = z.infer<typeof SpotifyResponseSchema>;
