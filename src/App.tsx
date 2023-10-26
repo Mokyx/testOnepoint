@@ -1,89 +1,106 @@
-import { useState } from 'react'
-import './App.css'
-import { Button } from 'primereact/button'
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState, selectToken } from './store/store';
-import { updateToken } from "./store/store";
-import { InputText } from 'primereact/inputtext';
-import AlbumList from './components/AlbumList';
-import axios, { AxiosError, AxiosResponse } from 'axios';
+import axios, { AxiosResponse } from "axios";
+import { Button } from "primereact/button";
+import { InputText } from "primereact/inputtext";
+import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import "./App.css";
+import { selectToken, updateToken } from "./store/store";
+
+import AlbumList from "./components/AlbumList";
+import { POPUP_OPTIONS, POPUP_TARGET, POPUP_URL } from "./constants";
+import {
+  SpotifyAlbum,
+  SpotifyAlbumsResponse,
+  SpotifyAlbumsResponseSchema,
+} from "./spotifyTypes";
 
 function App() {
   const token = useSelector(selectToken);
   const dispatch = useDispatch();
-  const [albumsList, setAlbumsList] = useState([]);
+  const [albumsList, setAlbumsList] = useState<SpotifyAlbum[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
 
-  /**
-   * Login to spotify
-   */
-  const connect = () => {
+  const loginToSpotify = () => {
     dispatch(updateToken(""));
-    const clientId = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
-    var width = 800;
-    var height = 600;
-    var left = screen.width / 2 - width / 2;
-    var top = screen.height / 2 - height / 2;
-    const popup = window.open(
-      `https://accounts.spotify.com/fr/authorize?client_id=${clientId}&response_type=token&redirect_uri=${location.origin}/callback&scope=user-read-private user-read-email&show_dialog=true`,
-      "Login with Spotify",
-      `width=${width},height=${height},top=${top},left=${left}`
-    );
-    const callback = async (token: string) => {
-      //@ts-ignore 
-      popup.close();
-      dispatch(updateToken(token));
+
+    const popup = window.open(POPUP_URL, POPUP_TARGET, POPUP_OPTIONS);
+    const callback = async (tokenFromPopup: string) => {
+      if (popup) popup.close();
+      dispatch(updateToken(tokenFromPopup));
     };
+
+    // TODO type & find solution to remove window
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     window.spotifyCallback = callback;
   };
 
-  /**
-   * Recherche des albums
-   */
   const searchAlbum = async () => {
-      const result: AxiosResponse = await axios({
-        method: "GET",
-        responseType: "json",
-        params: {
-          q: searchTerm,
-          type: "album",
-        },
-        url: "https://api.spotify.com/v1/search",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-      setAlbumsList(result.data.albums.items);
-  }
+    try {
+      const result: AxiosResponse<{ albums: SpotifyAlbumsResponse }> =
+        await axios({
+          method: "GET",
+          responseType: "json",
+          params: {
+            q: searchTerm,
+            type: "album",
+          },
+          url: "https://api.spotify.com/v1/search",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+      const albumsResponse = SpotifyAlbumsResponseSchema.parse(
+        result.data.albums
+      );
+      const albums = albumsResponse.items;
+      setAlbumsList(albums);
+    } catch (error) {
+      console.error("Error fetching albums:", error);
+    }
+  };
 
   const disconnect = () => {
-    dispatch(updateToken(''));
-  }
+    dispatch(updateToken(""));
+  };
 
-  if (token == '') {
+  if (token === "") {
     return (
       <div className="content">
-      <Button label="Se connecter à spotify" onClick={connect}/>
-    </div>
-    )
-  }
-  else {
-    return (    
-      <div className="content">
-        <Button label="Se déconnecter" className="p-button-danger" onClick={disconnect}/>
-        <div className="recherche">
-          <h2>Cherher un album</h2>
-          <span className="p-input-icon-left">
-            <InputText placeholder="Rechercher" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-          </span>
-          <Button style={{margin: '5px'}} label="Go !" className="p-button-success" aria-label="Search" onClick={searchAlbum}/>
-        </div>
-        <AlbumList albums={albumsList}></AlbumList>
+        <Button label="Se connecter à spotify" onClick={loginToSpotify} />
       </div>
-    )
+    );
   }
+
+  return (
+    <div className="content">
+      <Button
+        label="Se déconnecter"
+        className="p-button-danger"
+        onClick={disconnect}
+      />
+      <div className="recherche">
+        <h2>Cherher un album</h2>
+        <span className="p-input-icon-left">
+          <InputText
+            placeholder="Rechercher"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </span>
+        <Button
+          style={{ margin: "5px" }}
+          label="Go !"
+          className="p-button-success"
+          aria-label="Search"
+          onClick={searchAlbum}
+        />
+      </div>
+      <AlbumList albums={albumsList} />
+    </div>
+  );
 }
 
-export default App
+export default App;

@@ -1,29 +1,29 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App'
-import Callback from './Callback'
-import './index.css'
+import "primeicons/primeicons.css";
+import "primereact/resources/themes/lara-light-indigo/theme.css";
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { Provider } from "react-redux";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { store } from './store/store'
-import { Provider } from 'react-redux'
-import 'primereact/resources/themes/lara-light-indigo/theme.css';
-import 'primeicons/primeicons.css';
+import App from "./App";
+import Callback from "./Callback";
+import "./index.css";
+import { store } from "./store/store";
 
 const router = createBrowserRouter([
   {
     path: "/callback",
-    element: <Callback/>,
+    element: <Callback />,
   },
   {
     path: "/",
-    element: <App/>,
-  }
+    element: <App />,
+  },
 ]);
 
-ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
+ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-      <Provider store={store}>
-        <RouterProvider router={router} />
-      </Provider>
+    <Provider store={store}>
+      <RouterProvider router={router} />
+    </Provider>
   </React.StrictMode>
-)
+);
